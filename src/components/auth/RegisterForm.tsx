@@ -7,13 +7,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Checkbox } from "@/components/ui/checkbox";
 import { Shield, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { UserDataManager } from "@/utils/userData";
 
 interface RegisterFormProps {
   onBack: () => void;
   onSwitchToLogin: () => void;
+  onRegisterSuccess: () => void;
 }
 
-export const RegisterForm = ({ onBack, onSwitchToLogin }: RegisterFormProps) => {
+export const RegisterForm = ({ onBack, onSwitchToLogin, onRegisterSuccess }: RegisterFormProps) => {
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
@@ -45,17 +47,29 @@ export const RegisterForm = ({ onBack, onSwitchToLogin }: RegisterFormProps) => 
       return;
     }
 
-    if (formData.phone && formData.password && formData.name) {
-      toast({
-        title: "Registration Successful",
-        description: "Welcome to CyberX Security Hub! You have 3 daily credits.",
-      });
-      // In real app, this would create account in Supabase and redirect to dashboard
-      console.log("Registration successful", formData);
-    } else {
+    if (formData.password.length < 6) {
       toast({
         title: "Registration Failed",
-        description: "Please fill in all required fields",
+        description: "Password must be at least 6 characters long",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const user = UserDataManager.registerUser(formData.name, formData.phone, formData.password);
+      // Auto-login after registration
+      UserDataManager.loginUser(formData.phone, formData.password);
+      
+      toast({
+        title: "Registration Successful",
+        description: `Welcome to CyberX Security Hub, ${user.name}! You have 3 daily credits.`,
+      });
+      onRegisterSuccess();
+    } catch (error) {
+      toast({
+        title: "Registration Failed",
+        description: error instanceof Error ? error.message : "Registration failed",
         variant: "destructive",
       });
     }

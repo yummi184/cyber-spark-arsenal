@@ -1,21 +1,58 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Shield, Lock, Eye, MapPin, Smartphone, Wifi } from "lucide-react";
 import { LoginForm } from "@/components/auth/LoginForm";
 import { RegisterForm } from "@/components/auth/RegisterForm";
+import { Dashboard } from "@/components/Dashboard";
+import { UserDataManager } from "@/utils/userData";
 
 const Index = () => {
   const [showLogin, setShowLogin] = useState(false);
   const [showRegister, setShowRegister] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    // Check if user is already logged in
+    const currentUser = UserDataManager.getCurrentUser();
+    if (currentUser) {
+      setIsLoggedIn(true);
+    }
+  }, []);
+
+  const handleLoginSuccess = () => {
+    setIsLoggedIn(true);
+    setShowLogin(false);
+  };
+
+  const handleRegisterSuccess = () => {
+    setIsLoggedIn(true);
+    setShowRegister(false);
+  };
+
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+  };
+
+  if (isLoggedIn) {
+    return <Dashboard onLogout={handleLogout} />;
+  }
 
   if (showLogin) {
-    return <LoginForm onBack={() => setShowLogin(false)} onSwitchToRegister={() => { setShowLogin(false); setShowRegister(true); }} />;
+    return <LoginForm 
+      onBack={() => setShowLogin(false)} 
+      onSwitchToRegister={() => { setShowLogin(false); setShowRegister(true); }} 
+      onLoginSuccess={handleLoginSuccess}
+    />;
   }
 
   if (showRegister) {
-    return <RegisterForm onBack={() => setShowRegister(false)} onSwitchToLogin={() => { setShowRegister(false); setShowLogin(true); }} />;
+    return <RegisterForm 
+      onBack={() => setShowRegister(false)} 
+      onSwitchToLogin={() => { setShowRegister(false); setShowLogin(true); }} 
+      onRegisterSuccess={handleRegisterSuccess}
+    />;
   }
 
   return (
@@ -89,7 +126,6 @@ const Index = () => {
         </div>
       </div>
 
-      {/* About Section */}
       <div className="container mx-auto px-6 py-16">
         <h3 className="text-4xl font-bold text-center mb-12 text-purple-400">About CyberX Security Hub</h3>
         <div className="max-w-4xl mx-auto space-y-6 text-gray-300 text-lg">
@@ -122,7 +158,6 @@ const Index = () => {
         </div>
       </div>
 
-      {/* Features Preview */}
       <div className="container mx-auto px-6 py-16">
         <h3 className="text-4xl font-bold text-center mb-12 text-purple-400">Educational Modules</h3>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -188,7 +223,6 @@ const Index = () => {
         </div>
       </div>
 
-      {/* Footer */}
       <footer className="bg-black/50 py-8 mt-16">
         <div className="container mx-auto px-6 text-center">
           <p className="text-gray-400">

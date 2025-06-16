@@ -6,13 +6,15 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Shield, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { UserDataManager } from "@/utils/userData";
 
 interface LoginFormProps {
   onBack: () => void;
   onSwitchToRegister: () => void;
+  onLoginSuccess: () => void;
 }
 
-export const LoginForm = ({ onBack, onSwitchToRegister }: LoginFormProps) => {
+export const LoginForm = ({ onBack, onSwitchToRegister, onLoginSuccess }: LoginFormProps) => {
   const [formData, setFormData] = useState({
     phone: "",
     password: ""
@@ -22,18 +24,17 @@ export const LoginForm = ({ onBack, onSwitchToRegister }: LoginFormProps) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Mock login logic - in real app this would connect to Supabase
-    if (formData.phone && formData.password) {
+    try {
+      const user = UserDataManager.loginUser(formData.phone, formData.password);
       toast({
         title: "Login Successful",
-        description: "Welcome back to CyberX Security Hub!",
+        description: `Welcome back, ${user.name}! You have ${user.credits} credits remaining.`,
       });
-      // In real app, redirect to dashboard
-      console.log("Login successful", formData);
-    } else {
+      onLoginSuccess();
+    } catch (error) {
       toast({
         title: "Login Failed",
-        description: "Please enter valid credentials",
+        description: error instanceof Error ? error.message : "Invalid credentials",
         variant: "destructive",
       });
     }
